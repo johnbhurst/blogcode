@@ -15,15 +15,12 @@ class HSSFWorkbookBuilderTest {
     def workbook = new HSSFWorkbookBuilder().workbook {
       sheet("Data") { // sheet1
         row(["Invoice Number", "Invoice Date", "Amount"])
-        [
-          ["100", Date.parse("yyyy-MM-dd", "2010-10-18"), 123.45],
-          ["600", Date.parse("yyyy-MM-dd", "2010-11-17"), 132.54]
-        ].each {row(it)}
+        row(["100", Date.parse("yyyy-MM-dd", "2010-10-18"), 123.45])
+        row(["600", Date.parse("yyyy-MM-dd", "2010-11-17"), 132.54])
       }
-      sheet("SQL") { // sheet2
-        """SELECT *
-FROM nmi_status
-WHERE active_yn = 'Y'""".eachLine {row([it])}
+      sheet("Summary") { // sheet2
+        row(["Sheet: Summary"])
+        row(["Total", 123.45 + 132.54])
       }
     }
 
@@ -40,12 +37,12 @@ WHERE active_yn = 'Y'""".eachLine {row([it])}
     assert sheet1.getRow(2).getCell(2).numericCellValue == 132.54
     assert sheet1.getPhysicalNumberOfRows() == 3
     assert sheet1.lastRowNum == 2
-    Sheet sheet2 = workbook.getSheet("SQL")
-    assert sheet2.getRow(0).getCell(0).stringCellValue == "SELECT *"
-    assert sheet2.getRow(1).getCell(0).stringCellValue == "FROM nmi_status"
-    assert sheet2.getRow(2).getCell(0).stringCellValue == "WHERE active_yn = 'Y'"
-    assert sheet2.getPhysicalNumberOfRows() == 3
-    assert sheet2.lastRowNum == 2
+    Sheet sheet2 = workbook.getSheet("Summary")
+    assert sheet2.getRow(0).getCell(0).stringCellValue == "Sheet: Summary"
+    assert sheet2.getRow(1).getCell(0).stringCellValue == "Total"
+    assert sheet2.getRow(1).getCell(1).numericCellValue == 123.45 + 132.54
+    assert sheet2.getPhysicalNumberOfRows() == 2
+    assert sheet2.lastRowNum == 1
   }
 }
 
