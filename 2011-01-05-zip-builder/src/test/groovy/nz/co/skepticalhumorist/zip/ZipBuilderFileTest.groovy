@@ -25,18 +25,16 @@ class ZipBuilderFileTest {
     new File("$dir/dir1/dir12/file4.txt").text = "file4"
   }
 
-  @Test
-  void testFileTreeWithBuilder() {
-    new ZipBuilder(new FileOutputStream("builder.zip")).zip {
+  void zipFileTreeWithBuilder(String dir, String zipFile) {
+    new ZipBuilder(new FileOutputStream(zipFile)).zip {
       new File(dir).traverse(type: FileType.FILES) {File file ->
         entry(file.path, size: file.length(), time: file.lastModified()) {it << file.bytes}
       }
     }
   }
 
-  @Test
-  void testFileTreeWithGdk() {
-    new ZipOutputStream(new FileOutputStream("gdk.zip")).withStream {zos ->
+  void zipFileTreeWithJdk(String dir, String zipFile) {
+    new ZipOutputStream(new FileOutputStream(zipFile)).withStream {zos ->
       new File(dir).traverse(type: FileType.FILES) {File file ->
         def entry = new ZipEntry(file.path)
         entry.size = file.length()
@@ -45,5 +43,25 @@ class ZipBuilderFileTest {
         zos << file.bytes
       }
     }
+  }
+
+  @Test
+  void testFileTreeWithBuilder() {
+    zipFileTreeWithBuilder(dir, "builder.zip")
+  }
+
+  @Test
+  void testFileTreeWithGdk() {
+    zipFileTreeWithJdk(dir, "jdk.zip")
+  }
+
+  @Test
+  void testSrcTreeWithBuilder() {
+    zipFileTreeWithBuilder("src", "src-builder.zip")
+  }
+
+  @Test
+  void testSrcTreeWithJdk() {
+    zipFileTreeWithJdk("src", "src-jdk.zip")
   }
 }
