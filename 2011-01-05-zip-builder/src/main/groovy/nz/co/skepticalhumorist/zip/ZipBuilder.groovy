@@ -18,20 +18,16 @@ class ZipBuilder {
     }
   }
 
-  OutputStream os
   ZipOutputStream zos
 
   ZipBuilder(OutputStream os) {
-    this.os = os
+    zos = new ZipOutputStream(os)
   }
 
   void zip(Closure closure) {
-    os.withStream {
-      zos = new ZipOutputStream(os)
-      closure.delegate = this
-      closure.call()
-      zos.close()
-    }
+    closure.delegate = this
+    closure.call()
+    zos.close()
   }
 
   void entry(Map props, String name, Closure closure) {
