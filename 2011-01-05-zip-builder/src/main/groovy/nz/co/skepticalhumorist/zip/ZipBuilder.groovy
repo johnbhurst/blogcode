@@ -5,16 +5,14 @@
 
 package nz.co.skepticalhumorist.zip
 
-import java.util.zip.ZipOutputStream
+import groovy.transform.InheritConstructors
 import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 class ZipBuilder {
 
-  class NonClosingOutputStream extends FilterOutputStream {
-    NonClosingOutputStream(OutputStream target) {
-      super(target)
-    }
-
+  @InheritConstructors
+  static class NonClosingOutputStream extends FilterOutputStream {
     void close() {
       // do nothing
     }
