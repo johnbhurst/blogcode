@@ -1,0 +1,54 @@
+
+Replaced this:
+
+      def rates = []
+      boolean ok = true
+      usageRateIndexes.each {index ->
+        if (indexes.contains(index)) {
+          if (isNumericValue(row, index) {
+            rates << numericValue(row, index)
+          }
+          else {
+            ok = false
+          }
+        }
+        else {
+          if (isNumericValue(row, index) {
+            ok = false
+          }
+        }
+      }
+      if (ok) {
+        closure.call(code, *rates)
+      }
+
+with this:
+
+      if (usageRateIndexes.every {int index -> indexes.contains(index) == isNumericValue(row, index)}) {
+        closure.call(code, *indexes.collect {int index -> numericValue(row, index)})
+      }
+
+
+2011-11-09
+
+replace
+def first = true
+a.each {
+  if (first) {
+    // ...
+    first = false
+  }
+  else {
+    //
+  }
+
+with inject()
+
+E.g. with printing a table with a section break
+
+
+2011-11-09
+
+Variable argument lists for inject()?
+
+
