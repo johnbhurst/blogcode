@@ -1,0 +1,62 @@
+Today I was enhancing some Groovy scripts at work and noticed that I had written several awkward functions to combine elements from multiple collections.
+
+Here's the classic example: you want to sum the corresponding elements from two lists and make a new list with the sums. You can do it like this in Groovy:
+<pre class="brush:groovy">def sum(List l1, List l2) {
+  def result = []
+  l1.eachWithIndex {v, i ->
+    result << v + l2[i]
+  }
+  return result
+}
+
+def a = [1, 2, 3]
+def b = [10, 20, 30]
+assert sum(a, b) == [11, 22, 33]
+</pre>
+
+It works, but it isn't very Groovy.
+
+For a long time since starting with Groovy (and Ruby), I've felt that for-loops are a bit of a code smell.
+Passing a closure or code block to an "each" method seems so much more elegant and concise.
+
+I feel that this pattern of
+  - initialize
+  - accumulate
+  - return result
+
+is also a code smell.
+It's much nicer to specify a result as an expression, rather than having all this procedural code.
+I love to use the collect() method in Groovy.
+But it cannot handle every situation, and this is an example where it doesn't quite do it.
+Another situation is
+
+I wanted a way to pass the elements from both lists into one closure.  I came up with this function, named after a similar function in Python:
+<pre class="brush:groovy">Collection zip(Collection cols, Closure closure) {
+  def iters = cols*.iterator()
+  def result = []
+  while (iters.inject(true) {r, iter -> r && iter.hasNext()}) {
+    result << closure.call(*iters*.next())
+  }
+  return result
+}
+
+assert zip([a, b]) {x, y -> x + y} == [11, 22, 33]</pre>
+
+That's a bit nicer, but wrapping the lists inside another list is awkward.
+
+We can improve it a bit:
+
+<pre class="brush:groovy">Collection zip(Collection a, Collection b, Closure closure) {
+  return zip([a, b], closure)
+}
+assert zip(a, b) {x, y -> x + y} == [11, 22, 33]
+
+Collection zip(Collection a, Collection b, Collection c, Closure closure) {
+  return zip([a, b, c], closure)
+}
+def c = [100, 200, 300]
+assert zip([a, b, c]) {x, y, z -> x + y + z} == [111, 222, 333]
+assert zip(a, b, c) {x, y, z -> x + y + z} == [111, 222, 333]</pre>
+
+
+
