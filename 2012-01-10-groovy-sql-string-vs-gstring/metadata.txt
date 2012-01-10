@@ -1,0 +1,30 @@
+
+
+Groovy SQL Metadata tips
+
+Groovy's Sql class contains a number of extremely useful JDBC-related methods.
+
+This blog explains a couple of somewhat obscure features relating to JDBC metadata:
+  - String vs GString overloads
+  - ResultSetMetadata overloads and column attributes
+
+The Sql class provides several different query methods:
+  eachRow()
+  firstRow()
+  query()
+  rows()
+
+Each of these methods provides several overloads.
+Where a query takes parameters, the Sql class provides three different approaches:
+  Mark the parameters using SQL placeholders "?", and provide parameters in a List.
+  For example:
+  sql.firstRow("SELECT * FROM offices WHERE officecode = ?", ["
+
+  Mark the parameters using SQL placeholders "?", and provide parameters in an Array. (This can be called with varargs syntax.)
+  Use a GString and have Groovy replace GString "${}" placeholders with SQL placeholders.
+
+
+
+The overloads occur in pairs, one of which accepts a closure for handling ResultSetMetadata.
+
+So for example,
