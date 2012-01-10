@@ -1,0 +1,16 @@
+
+apply plugin: "groovy"
+apply plugin: "idea"
+
+repositories {
+  mavenCentral()
+}
+dependencies {
+  groovy("org.codehaus.groovy:groovy:1.7.9")
+  compile("org.springframework:spring-context:3.0.5.RELEASE")
+  compile("javax.validation:validation-api:1.0.0.GA")
+  compile("org.hibernate:hibernate-validator:4.0.2.GA")
+  compile("net.sf.opencsv:opencsv:2.0")
+  testCompile("junit:junit:4.8.2")
+}
+
