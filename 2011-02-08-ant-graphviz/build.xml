@@ -1,0 +1,17 @@
+<project name="ant-graphviz" default="target-graph">
+  <target name="target-graph">
+    <taskdef name="groovy" classname="org.codehaus.groovy.ant.Groovy"/>
+    <groovy>
+      def u(x) {x.toString().replace("-", "_").replace(".", "_")}
+      new File("build.dot").text = """
+digraph ant {
+  ${project.targets.values().collect {target ->
+    target.dependencies.collect {dep ->
+      u(dep) + " -> " + u(target)
+    }.join("\n")
+  }.join("\n")}
+}
+"""
+    </groovy>
+  </target>
+</project>

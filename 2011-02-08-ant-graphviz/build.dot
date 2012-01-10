@@ -1,0 +1,13 @@
+
+digraph ant {
+  prepare -> "compile-main"
+
+compile_main -> compile_test
+compile -> test
+
+
+clean -> all
+test -> all
+compile_test -> compile
+
+}
