@@ -1,3 +1,5 @@
+// Run with -Djava.util.logging.config.file=logging.properties
+
 @Grab("org.springframework:spring-jdbc:3.1.0.RELEASE")
 @Grab("com.h2database:h2:1.3.163")
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder
