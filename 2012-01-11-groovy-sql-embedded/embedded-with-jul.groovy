@@ -1,4 +1,4 @@
-// Run with -Djava.util.logging.config.file=logging.properties
+// Run with -Djava.util.logging.config.file=jul.properties
 
 @Grab("org.springframework:spring-jdbc:3.1.0.RELEASE")
 @Grab("com.h2database:h2:1.3.163")
