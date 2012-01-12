@@ -1,3 +1,5 @@
+// Run with -cp . -Djava.util.logging.config.file=jul-to-slf4j.properties
+
 @Grab("org.springframework:spring-jdbc:3.1.0.RELEASE")
 @Grab("com.h2database:h2:1.3.163")
 @Grab("com.googlecode.usc:jdbcdslog:1.0.5")
