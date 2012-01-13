@@ -1,7 +1,3 @@
-// Copyright 2011 Red Energy
-// John Hurst (john.b.hurst@gmail.com)
-// 2011-11-23
-
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder
 import ch.qos.logback.core.ConsoleAppender
 import static ch.qos.logback.classic.Level.INFO
