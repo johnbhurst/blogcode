@@ -1,0 +1,33 @@
+
+This is the first in a series of posts about Groovy SQL.
+
+I would like to explain some real-world uses of Groovy SQL,
+show some interesting techniques, and shed some light on one or two
+features that are perhaps not very well known.
+
+To begin with I wanted to set up an environment
+to use to demonstrate Groovy SQL, that you can work with
+yourself to carry out your own experiments.
+Part of this was supposed to be a short introduction to
+embedded SQL databases and JDBC logging.
+But that lead into Java Logging frameworks,
+and that quickly became a 300-page brief summary overview,
+just to show a couple of simple examples.
+
+Never mind, we will try not to digress too much into Java Logging,
+which I hope you won't find too disappointing.
+
+To begin with, let's see how to create a sample database we can use
+for Groovy SQL experiments.
+
+I use Oracle for most of my work.
+But if you don't use Oracle, setting up and running experiments with it is a very difficult approach.
+
+Instead, we can use a lightweight Java embedded database.
+It turns out the Spring 3.x has very nice support for this sort of thing.
+
+With Groovy, we can get an embedded in-memory H2 database defined, populated, running and ready to use,
+with just a few lines of code:
+
+
+
