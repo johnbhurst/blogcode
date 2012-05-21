@@ -29,5 +29,158 @@ It turns out the Spring 3.x has very nice support for this sort of thing.
 With Groovy, we can get an embedded in-memory H2 database defined, populated, running and ready to use,
 with just a few lines of code:
 
+<pre class="brush:groovy">
+@Grab("org.springframework:spring-jdbc:3.1.0.RELEASE")
+@Grab("com.h2database:h2:1.3.163")
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType
 
+def builder = new EmbeddedDatabaseBuilder()
+def db = builder.setType(EmbeddedDatabaseType.H2).addScript("birt-h2.sql").build()
+</pre>
+
+After running this code, a script has a DataSource ready to use in the db variable.
+
+OK, so there is one other little detail that you need: the contents of the "birt-h2.sql" file.
+In this case I am defining and populating the Eclipse BIRT sample schema. See http://www.eclipse.org/birt/phoenix/db/
+
+You can get this file with this command:
+
+<pre class="brush:bash">
+wget https://raw.github.com/johnbhurst/blogcode/master/2012-01-11-groovy-sql-embedded/birt-h2.sql
+</pre>
+
+Or you can use your own script.
+
+At the end of the script we can put this line to shutdown the database, but it isn't terribly necessary:
+
+<pre class="brush:groovy">
+db.shutdown()
+</pre>
+
+Now, we can use this embedded database from the Groovy script by instantiating a Groovy Sql object.
+
+Then, we can use Groovy SQL and run statements on the database.
+For example:
+
+<pre class="brush:groovy">
+@Grab("org.springframework:spring-jdbc:3.1.0.RELEASE")
+@Grab("com.h2database:h2:1.3.163")
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType
+import groovy.sql.Sql
+
+def builder = new EmbeddedDatabaseBuilder()
+def db = builder.setType(EmbeddedDatabaseType.H2).addScript("birt-h2.sql").build()
+def sql = new Sql(db)
+
+def c = sql.firstRow("SELECT COUNT(*) c FROM offices").c
+assert c == 7
+
+db.shutdown()
+</pre>
+
+By default, this produces some logging from Spring's loggers:
+
+<pre class="brush:plain">
+Jan 13, 2012 4:46:31 PM org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory initDatabase
+INFO: Creating embedded database 'testdb'
+Jan 13, 2012 4:46:31 PM org.springframework.jdbc.datasource.init.ResourceDatabasePopulator executeSqlScript
+INFO: Executing SQL script from class path resource [birt-h2.sql]
+Jan 13, 2012 4:46:32 PM org.springframework.jdbc.datasource.init.ResourceDatabasePopulator executeSqlScript
+INFO: Done executing SQL script from class path resource [birt-h2.sql] in 414 ms.
+</pre>
+
+The next step is to find out how we can examine what JDBC calls Groovy is making.
+
+Here are two ways we can do this:
+
+<ol>
+<li>Use Groovy's build-in Sql logging.</li>
+<li>Use a JDBC logger.</li>
+</ol>
+
+Groovy provides basic logging of JDBC activity.
+Groovy's logging is based on java.util.logging.
+To use it, we need to configure java.util.logging.
+
+The easiest way to configure java.util.logging is using a properties file.
+Put these lines into jul.properties:
+
+<pre class="brush:plain">
+handlers= java.util.logging.ConsoleHandler
+java.util.logging.ConsoleHandler.level = FINEST
+java.util.logging.ConsoleHandler.formatter = java.util.logging.SimpleFormatter
+java.util.logging.SimpleFormatter.format=[%1$tF %1$tT] %4$s: %5$s %n
+groovy.sql.level=FINEST
+org.springframework.level=WARNING
+</pre>
+
+This file configures a simple console logger with a reasonable default output format.
+It specifies that Spring logging should be at WARNING level, while
+Groovy SQL logging should be at FINEST, which is java.util.logging's version of DEBUG.
+
+Now we can put a few more Groovy SQL calls into a script, such as this one:
+
+<pre class="brush:groovy">
+@Grab("org.springframework:spring-jdbc:3.1.0.RELEASE")
+@Grab("com.h2database:h2:1.3.163")
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType
+import groovy.sql.Sql
+
+def builder = new EmbeddedDatabaseBuilder()
+def db = builder.setType(EmbeddedDatabaseType.H2).addScript("birt-h2.sql").build()
+def sql = new Sql(db)
+
+def c = sql.firstRow("SELECT COUNT(*) c FROM offices").c
+assert c == 7
+
+def state = "CA"
+def country = "USA"
+
+def office0 = sql.firstRow("SELECT * FROM offices WHERE state = 'CA' AND country = 'USA'")
+assert office0.city == "San Francisco"
+
+def office1 = sql.firstRow("SELECT * FROM offices WHERE state = ? AND country = ?", state, country)
+assert office1.city == "San Francisco"
+
+def office2 = sql.firstRow("SELECT * FROM offices WHERE state = ? AND country = ?", [state, country])
+assert office2.city == "San Francisco"
+
+def office3 = sql.firstRow("SELECT * FROM offices WHERE state = $state AND country = $country")
+assert office3.city == "San Francisco"
+
+db.shutdown()
+</pre>
+
+And then we can run the script using:
+
+<pre class="brush:plain">
+groovy -Djava.util.logging.config.file=jul.properties ./embedded-with-jul.groovy
+</pre>
+
+And we get output like this:
+
+<pre class="brush:plain">
+[2012-01-13 16:56:02] FINE: SELECT COUNT(*) c FROM offices
+[2012-01-13 16:56:02] FINE: SELECT * FROM offices WHERE state = 'CA' AND country = 'USA'
+[2012-01-13 16:56:02] FINE: SELECT * FROM offices WHERE state = ? AND country = ? | [CA, USA]
+[2012-01-13 16:56:02] FINE: SELECT * FROM offices WHERE state = ? AND country = ? | [CA, USA]
+[2012-01-13 16:56:02] FINE: SELECT * FROM offices WHERE state = ? AND country = ? | [CA, USA]
+</pre>
+
+This illustrates to us that the first two queries are executed as-is, while the next three use placeholders and bind variables.
+
+If we want a bit more detail and flexibility in JDBC logging, we can get a purpose-built JDBC logging wrapper.
+One example is jdbcdslog, which you can find at http://code.google.com/p/jdbcdslog/.
+As mentioned there, there is also an experimental version with some new features on GitHub at https://github.com/usc/jdbcdslog-exp.
+
+Conveniently, this logging wrapper is also available in Maven Central, which means that we can easily use it from a Groovy script using @Grab.
+Well, kind of easily.
+It turns out that jdbcdslog uses SLF4J, and SLF4J is kind of tricky to use from Groovy.
+Or so I found it. Thus the 300-page logging intro, which I will spare you.
+Here I will show you what worked for me.
+
+First, to use SLF4J we need to
 
