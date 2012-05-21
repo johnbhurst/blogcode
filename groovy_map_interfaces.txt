@@ -1,0 +1,12 @@
+interface Foo {
+  String getBar()
+}
+
+Foo x = [getBar: {-> "ONE"}] as Foo
+
+assert x.bar == "ONE"
+
+
+With Groovy SQL and GroovyRowResult?
+
+
