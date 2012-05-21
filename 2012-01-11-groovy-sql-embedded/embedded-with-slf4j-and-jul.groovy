@@ -1,4 +1,4 @@
-// Run with -cp .
+// Run with -cp . -Djava.util.logging.config.file=jul-to-slf4j.properties
 
 @Grab("org.springframework:spring-jdbc:3.1.0.RELEASE")
 @Grab("com.h2database:h2:1.3.163")
@@ -6,6 +6,7 @@
 @Grapes([
   @Grab("ch.qos.logback:logback-classic:0.9.30"),
   @Grab("org.slf4j:jcl-over-slf4j:1.6.4"),
+  @Grab("org.slf4j:jul-to-slf4j:1.6.4"),
   @Grab("org.slf4j:slf4j-api:1.6.4"),
   @GrabExclude("slf4j:slf4j-api"),
   @GrabConfig(systemClassLoader = true)
@@ -13,7 +14,10 @@
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType
 import org.jdbcdslog.ConnectionPoolDataSourceProxy
+import org.slf4j.bridge.SLF4JBridgeHandler
 import groovy.sql.Sql
+
+SLF4JBridgeHandler.install()
 
 def builder = new EmbeddedDatabaseBuilder()
 def db = builder.setType(EmbeddedDatabaseType.H2).addScript("birt-h2.sql").build()
