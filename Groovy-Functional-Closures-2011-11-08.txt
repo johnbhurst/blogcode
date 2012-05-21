@@ -52,3 +52,7 @@ E.g. with printing a table with a section break
 Variable argument lists for inject()?
 
 
+2012-02-23
+
+ListNMIStandingData
+
