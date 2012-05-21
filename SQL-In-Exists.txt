@@ -1,0 +1,9 @@
+
+explain plan for select * from genprod.pricingconsumer where prcon_consumer not in (select consumerno from genprod.consumer);
+
+explain plan for select * from genprod.pricingconsumer where prcon_consumer is not null and prcon_consumer not in (select consumerno from genprod.consumer);
+
+explain plan for select * from genprod.pricingconsumer pc where not exists (select * from genprod.consumer c where c.consumerno = pc.prcon_consumer);
+
+explain plan for select * from genprod.pricingconsumer pc where prcon_consumer is not null and not exists (select * from genprod.consumer c where c.consumerno = pc.prcon_consumer);
+
