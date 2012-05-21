@@ -1,0 +1,16 @@
+
+
+def str = "123456"
+java.util.regex.Pattern PATTERN = ~/\d+/
+java.util.regex.Matcher matcher = str =~ PATTERN
+
+println matcher.class
+
+if (matcher) {println "Match"}
+if (!matcher) {println "No Match"}
+
+
+Matchers are not booleans.
+
+Use another pattern.
+
