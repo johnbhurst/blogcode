@@ -1,3 +1,5 @@
 **/.gradle/
 **/build/
 **/*.iws
+*.sublime-project
+*.sublime-workspace
