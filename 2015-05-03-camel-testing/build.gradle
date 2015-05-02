@@ -1,0 +1,26 @@
+// Copyright 2015 John Hurst
+// John Hurst (john.b.hurst@gmail.com)
+// 2015-05-03
+
+apply plugin: "groovy"
+
+wrapper {
+  gradleVersion = "2.3"
+}
+
+repositories {
+  mavenCentral()
+}
+
+String version(String module) {
+  return project.property(project.name + ".version." + module)
+}
+
+dependencies {
+  compile "org.codehaus.groovy:groovy:${version("groovy")}"
+
+  testCompile("org.spockframework:spock-core:${version('spock')}") {
+    exclude group: "org.codehaus.groovy"
+  }
+}
+
