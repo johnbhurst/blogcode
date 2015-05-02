@@ -1,0 +1,51 @@
+<p>
+In my new job at <a href="www.assurity.co.nz">Assurity Consulting</a> I've been looking at some large builds. Some that take 6 hours or more to run in the Continuous Integration Server. There's a fairly random mix of Ant, Maven and good old shell. The last few days I spent some time diving into the details of a fairly large Ant build.
+</p>
+<p>
+I've been using a combination of three techniques to analyze where the time is being spent in this build:
+</p>
+<ol>
+<li>Analysis by inspection.</li>
+<li>Analysis of "ant -d" output.</li>
+<li>Ant Profiler.</li>
+</ol>
+<p>
+There are a number of files and many tasks and targets in this build, and I haven't been able to walk through the entire thing yet. But by browsing through "interesting" parts, I have been able to find out some significant things about the build. 
+</p>
+<p>
+For example, the build makes extensive use of &lt;antcall&gt;. Sometimes people use &lt;antcall&gt; when they don't understand the correction usage of "depends" on Ant targets. In this build, many of the &lt;antcall&gt; usages would be more appropriately done with &lt;macrodef&gt;. &lt;antcall&gt; is inefficient to use on targets within the same build file, because it reparses and copies properties. Please learn to use &lt;macrodef&gt; with Ant. It is your friend. 
+</p>
+<p>
+To extract some data about the Ant build as a whole, I ran it with "ant -d". On this particular build, it generates 600,000 lines of output. Again, a lot of detail. 
+</p>
+<p>
+With some shell piping we can see potential areas of duplication, or work being repeated:
+</p>
+<p>
+<pre class="brush:plain; gutter: false;">ant -d >ant.debug.out 
+sort ant.debug.out | uniq -c | sort -nr | head</pre>
+</p>
+<p>
+For example, we can see whether certain Java source files are compiled more than once during the build:
+</p>
+<pre class="brush:plain; gutter: false;">egrep "^ *\\[javac\\]" ant.debug.out | sort | uniq -c | sort -nr | less</pre>
+<p>  
+In this case I found that some classes are compiled twice, three, four or five times. Unfortunately, not enough classes to make a large difference to the build time, but still ...
+</p>
+<p>
+Finally, I found a great Ant profiler called <a href="http://sourceforge.net/projects/antro/">antro</a>. This profiler is really neat. It is completely non-invasive. It uses the Ant listeners feature, and can be run like this to analyze a build:
+</p>
+<pre class="brush:plain; gutter: false;">ant -listener ru.jkff.antro.ProfileListener -lib ~/antro/antro.jar build.xml</pre>
+</p>
+<p>
+This generates a JSON file, which can then be loaded into the profiler's GUI. The GUI is run simply with:
+</p>
+<pre class="brush:plain; gutter: false;">java -jar antro.jar</pre>
+<div class="separator" style="clear: both; text-align: center;">
+<a href="http://1.bp.blogspot.com/-j4S2UKlPNGU/UDsm5vqh51I/AAAAAAAACyA/ZkXKwZYD3yQ/s1600/Antro%2BAnt%2BProfiler%2B2012-08-27.png" imageanchor="1" style="margin-left:1em; margin-right:1em"><img border="0" height="215" width="400" src="http://1.bp.blogspot.com/-j4S2UKlPNGU/UDsm5vqh51I/AAAAAAAACyA/ZkXKwZYD3yQ/s800/Antro%2BAnt%2BProfiler%2B2012-08-27.png" /></a></div>
+<p>
+What could be simpler?
+</p>
+<p>
+It provides a tree view of the build times, where you can drill down into any node and explore the detail. Using this tool it's easy to get a bird's eye view of the build time breakdown, as well as drill into areas of interest. For example, I was able to assess the overhead of &lt;antcall&gt; by looking at some of those nodes. Unfortunately, there seems to be no way to see the total number or overhead for a single task type such as &lt;antcall&gt; across the whole build. I was able to find the total number of &lt;antcall&gt;s (not the times though) from the "ant -d" output. This allowed me to estimate the total time overhead of &lt;antcall&gt; for this build.
+</p>
